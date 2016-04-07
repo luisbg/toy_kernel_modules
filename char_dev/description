@@ -1,0 +1,17 @@
+Toy Char Device Driver
+----------------------
+
+A kernel module for a misc char device driver.  The misc interface is a simple
+way to create a character device, without having to deal with sysfs and
+character device registration.
+
+This misc device implements the read and write functions, on the device on
+/dev/toychardev. Reading returns the ID, writing checks if the data to write
+matches the ID.
+
+Compile, load and unload module with:
+$ make
+# insmod hello.ko
+# cat /dev/toychardev
+# echo "not_the_id" > /dev/toychardev
+# rmmod hello
