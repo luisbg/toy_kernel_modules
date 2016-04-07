@@ -1,0 +1,21 @@
+Hello World Module
+------------------------------------------
+
+A Linux kernel module, and stand-alone Makefile, that when loaded prints to the
+kernel debug log level, "Hello World!". The module is able to be unloaded as
+well.
+
+The Makefile is able to build the kernel module against the source of the
+currently-running kernel as well as being able to accept an arbitrary kernel
+sources directory from an environment variable.
+
+Load and unload module with:
+# insmod hello.ko
+# rmmod hello
+
+
+Alternatively:
+# ln -s /path/to/module.ko /lib/modules/`uname -r`
+# depmod -a
+# modprobe hello
+# rmmod hello
