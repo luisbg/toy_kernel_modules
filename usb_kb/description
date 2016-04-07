@@ -1,0 +1,11 @@
+Toy USB Keyboard Driver
+------------------------------------------
+
+When any USB keyboard is plugged in, this module will be automatically loaded
+by the userspace hotplug tools (depmod / kmod / udev / mdev / systemd,
+depending on the distribution you are on.)
+
+Compile, load and unload module with (we need this registered early):
+# make
+# ln -s /path/to/module.ko /lib/modules/`uname -r`
+# reboot

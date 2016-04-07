@@ -8,3 +8,10 @@ hello.mod.c
 hello.mod.o
 hello.o
 modules.order
+.usb_kb_toy.ko.cmd
+.usb_kb_toy.mod.o.cmd
+.usb_kb_toy.o.cmd
+usb_kb_toy.ko
+usb_kb_toy.mod.c
+usb_kb_toy.mod.o
+usb_kb_toy.o
