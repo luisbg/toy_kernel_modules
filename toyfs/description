@@ -1,0 +1,13 @@
+Toy Filesystem Module
+------------------------------------------
+
+# insmod toyfs.ko
+# mount -t toyfs none /mnt
+# cat /mnt/counter
+# cat /mnt/counter
+# cat /mnt/counter
+# echo "100" > /mnt/counter
+# cat /mnt/counter
+# cat /mnt/counter
+# umount /mnt
+# rmmod toyfs
