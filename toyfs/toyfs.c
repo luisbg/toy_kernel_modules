@@ -15,7 +15,6 @@ MODULE_AUTHOR("Luis de Bethencourt");
 static struct dentry *toyfs_mount(struct file_system_type *fs_type,
 		int flags, const char *dev_name, void *data);
 static void toyfs_create_files (struct super_block *sb, struct dentry *root);
-static int toyfs_open(struct inode *inode, struct file *filp);
 static ssize_t toyfs_read_file(struct file *filp, char *buf,
 		size_t count, loff_t *offset);
 static ssize_t toyfs_write_file(struct file *filp, const char *buf,
@@ -37,7 +36,7 @@ static struct super_operations toyfs_s_ops = {
 };
 
 static struct file_operations toyfs_file_ops = {
-	.open 		= toyfs_open,
+	.open 		= simple_open,
 	.read 		= toyfs_read_file,
 	.write 		= toyfs_write_file,
 };
@@ -144,14 +143,6 @@ static struct dentry *toyfs_mount(struct file_system_type *fs_type,
 	pr_info("tfs: mount");
 
 	return mount_single(fs_type, flags, data, toyfs_fill_super);
-}
-
-static int toyfs_open(struct inode *inode, struct file *filp)
-{
-	pr_info("tfs: open");
-
-	filp->private_data = inode->i_private;
-	return 0;
 }
 
 static ssize_t toyfs_read_file(struct file *filp, char *buf,
