@@ -7,7 +7,7 @@
 #include <asm/uaccess.h>
 
 #define TOYFS_MAGIC 0x20160408
-#define TMPSIZE 20
+#define TMPSIZE 12
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Luis de Bethencourt");
@@ -167,15 +167,7 @@ static ssize_t toyfs_read_file(struct file *filp, char *buf,
 	atomic_inc(counter);
 
 	len = snprintf(tmp, TMPSIZE, "%d\n", c);
-	if (*offset > len)
-		return 0;
-	if (count > len - *offset)
-		count = len - *offset;
-
-	if (copy_to_user(buf, tmp + *offset, count))
-		return -EFAULT;
-	*offset += count;
-	return count;
+	return simple_read_from_buffer(buf, count, offset, tmp, len);
 }
 
 static ssize_t toyfs_write_file(struct file *filp, const char *buf,
@@ -186,15 +178,9 @@ static ssize_t toyfs_write_file(struct file *filp, const char *buf,
 
 	pr_info("tfs: write");
 
-	if (*offset != 0)
-		return -EINVAL;
-	if (count >= TMPSIZE)
-		return -EINVAL;
-
-	memset(tmp, 0, TMPSIZE);
-	if (copy_from_user(tmp, buf, count))
-		return -EFAULT;
+	simple_write_to_buffer(tmp, TMPSIZE, offset, buf, count);
 	atomic_set(counter, simple_strtol(tmp, NULL, 10));
+
 	return count;
 }
 
