@@ -59,30 +59,17 @@ static struct inode *toyfs_get_inode(struct super_block *sb,
 
 static int toyfs_fill_super (struct super_block *sb, void *data, int silent)
 {
-	struct inode *root;
-	struct dentry *root_dentry;
+	static struct tree_descr toy_files[] = {{""}};
+	int err;
 
 	pr_info("tfs: fill_super");
 
-	sb->s_blocksize = PAGE_CACHE_SIZE;
-	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
-	sb->s_magic = TOYFS_MAGIC;
+	err = simple_fill_super(sb, TOYFS_MAGIC, toy_files);
+	if (err)
+		return err;
+
 	sb->s_op = &toyfs_s_ops;
-
-	root = toyfs_get_inode(sb, NULL, S_IFDIR | 0755, 0);
-	if (!root)
-		return -ENOMEM;
-	root->i_op = &simple_dir_inode_operations;
-	root->i_fop = &simple_dir_operations;
-
-	root_dentry = d_make_root(root);
-	if (!root_dentry) {
-		iput(root);
-		return -ENOMEM;
-	}
-	sb->s_root = root_dentry;
-
-	toyfs_create_files (sb, root_dentry);
+	toyfs_create_files (sb, sb->s_root);
 
 	return 0;
 }
