@@ -14,7 +14,8 @@ MODULE_AUTHOR("Luis de Bethencourt");
 
 static struct dentry *toyfs_mount(struct file_system_type *fs_type,
 		int flags, const char *dev_name, void *data);
-static void toyfs_create_files (struct super_block *sb, struct dentry *root);
+static struct dentry *toyfs_create_file (struct super_block *sb,
+		umode_t mode, const char *name, atomic_t *counter);
 static ssize_t toyfs_read_file(struct file *filp, char *buf,
 		size_t count, loff_t *offset);
 static ssize_t toyfs_write_file(struct file *filp, const char *buf,
@@ -69,14 +70,15 @@ static int toyfs_fill_super (struct super_block *sb, void *data, int silent)
 		return err;
 
 	sb->s_op = &toyfs_s_ops;
-	toyfs_create_files (sb, sb->s_root);
+
+	atomic_set(&counter, 0);
+	toyfs_create_file(sb, S_IFREG, "counter", &counter);
 
 	return 0;
 }
 
 static struct dentry *toyfs_create_file (struct super_block *sb,
-		struct dentry *dir, umode_t mode, const char *name,
-		atomic_t *counter)
+		umode_t mode, const char *name, atomic_t *counter)
 {
 	struct dentry *dentry;
 	struct inode *inode;
@@ -87,7 +89,7 @@ static struct dentry *toyfs_create_file (struct super_block *sb,
 	qname.name = name;
 	qname.len = strlen (name);
 	qname.hash = full_name_hash(name, qname.len);
-	dentry = d_alloc(dir, &qname);
+	dentry = d_alloc(sb->s_root, &qname);
 	if (!dentry)
 		goto out;
 
@@ -114,14 +116,6 @@ out_dput:
 	dput(dentry);
 out:
 	return 0;
-}
-
-static void toyfs_create_files (struct super_block *sb, struct dentry *root)
-{
-	pr_info("tfs: create_files");
-
-	atomic_set(&counter, 0);
-	toyfs_create_file(sb, root, S_IFREG, "counter", &counter);
 }
 
 static struct dentry *toyfs_mount(struct file_system_type *fs_type,
