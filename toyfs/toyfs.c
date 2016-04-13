@@ -147,11 +147,18 @@ static ssize_t toyfs_write_file(struct file *filp, const char *buf,
 {
 	char tmp[TMPSIZE];
 	atomic_t *counter = (atomic_t *) filp->private_data;
+	long val;
+	int err;
 
 	pr_info("tfs: write");
 
 	simple_write_to_buffer(tmp, TMPSIZE, offset, buf, count);
-	atomic_set(counter, simple_strtol(tmp, NULL, 10));
+	tmp[count] = '\0';    /* ktrstrol needs a null terminated string */
+	err = kstrtol(tmp, 10, &val);
+	if (!err) {
+		atomic_set(counter, val);
+		pr_info("tfs: count is now %ld", val);
+	}
 
 	return count;
 }
