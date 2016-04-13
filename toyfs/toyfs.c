@@ -3,8 +3,8 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>
-#include <asm/atomic.h>
-#include <asm/uaccess.h>
+#include <linux/atomic.h>
+#include <linux/uaccess.h>
 
 #define TOYFS_MAGIC 0x20160408
 #define TMPSIZE 12
