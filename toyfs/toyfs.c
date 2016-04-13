@@ -15,7 +15,7 @@ MODULE_AUTHOR("Luis de Bethencourt");
 static struct dentry *toyfs_mount(struct file_system_type *fs_type,
 		int flags, const char *dev_name, void *data);
 static struct dentry *toyfs_create_file(struct super_block *sb,
-		umode_t mode, const char *name, atomic_t *counter);
+		umode_t mode, const char *name);
 static ssize_t toyfs_read_file(struct file *filp, char *buf,
 		size_t count, loff_t *offset);
 static ssize_t toyfs_write_file(struct file *filp, const char *buf,
@@ -53,6 +53,18 @@ static struct inode *toyfs_get_inode(struct super_block *sb,
 		ret->i_mode = mode;
 		ret->i_blocks = 0;
 		ret->i_atime = ret->i_mtime = ret->i_ctime = CURRENT_TIME;
+
+		if (mode & S_IFREG) {
+			pr_info("tfs: create regular file");
+
+			ret->i_fop = &toyfs_file_ops;
+			ret->i_private = &counter;
+		} else {
+			pr_info("tfs: create a directory");
+
+			ret->i_op = &simple_dir_inode_operations;
+			ret->i_fop = &simple_dir_operations;
+		}
 	}
 
 	return ret;
@@ -61,6 +73,7 @@ static struct inode *toyfs_get_inode(struct super_block *sb,
 static int toyfs_fill_super(struct super_block *sb, void *data, int silent)
 {
 	static struct tree_descr toy_files[] = { {""} };
+	struct inode *inode;
 	int err;
 
 	pr_info("tfs: fill_super");
@@ -72,13 +85,21 @@ static int toyfs_fill_super(struct super_block *sb, void *data, int silent)
 	sb->s_op = &toyfs_s_ops;
 
 	atomic_set(&counter, 0);
-	toyfs_create_file(sb, S_IFREG, "counter", &counter);
+
+	inode = toyfs_get_inode(sb, NULL, S_IFDIR, 0);
+	sb->s_root = d_make_root(inode);
+	if (!sb->s_root)
+		return -ENOMEM;
+
+	toyfs_create_file(sb, S_IFREG, "counter");
+	/* just to show we can have more files */
+	toyfs_create_file(sb, S_IFREG, "counter2");
 
 	return 0;
 }
 
 static struct dentry *toyfs_create_file(struct super_block *sb,
-		umode_t mode, const char *name, atomic_t *counter)
+		umode_t mode, const char *name)
 {
 	struct dentry *dentry;
 	struct inode *inode;
@@ -97,18 +118,6 @@ static struct dentry *toyfs_create_file(struct super_block *sb,
 	if (!inode)
 		goto out_dput;
 
-	if (mode & S_IFREG) {
-		pr_info("tfs: create regular file");
-
-		inode->i_fop = &toyfs_file_ops;
-		inode->i_private = counter;
-	} else {
-		pr_info("tfs: create a directory");
-
-		inode->i_op = &simple_dir_inode_operations;
-		inode->i_fop = &simple_dir_operations;
-	}
-
 	d_add(dentry, inode);
 	return dentry;
 
@@ -123,7 +132,7 @@ static struct dentry *toyfs_mount(struct file_system_type *fs_type,
 {
 	pr_info("tfs: mount");
 
-	return mount_single(fs_type, flags, data, toyfs_fill_super);
+	return mount_nodev(fs_type, flags, data, toyfs_fill_super);
 }
 
 static ssize_t toyfs_read_file(struct file *filp, char *buf,
