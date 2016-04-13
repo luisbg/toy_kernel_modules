@@ -14,7 +14,7 @@ MODULE_AUTHOR("Luis de Bethencourt");
 
 static struct dentry *toyfs_mount(struct file_system_type *fs_type,
 		int flags, const char *dev_name, void *data);
-static struct dentry *toyfs_create_file (struct super_block *sb,
+static struct dentry *toyfs_create_file(struct super_block *sb,
 		umode_t mode, const char *name, atomic_t *counter);
 static ssize_t toyfs_read_file(struct file *filp, char *buf,
 		size_t count, loff_t *offset);
@@ -24,22 +24,22 @@ static ssize_t toyfs_write_file(struct file *filp, const char *buf,
 static atomic_t counter;
 
 static struct file_system_type toyfs_type = {
-	.owner 		= THIS_MODULE,
-	.name 		= "toyfs",
-	.mount 		= toyfs_mount,
-	.kill_sb 	= kill_litter_super,
-	.fs_flags 	= FS_USERNS_MOUNT,
+	.owner		= THIS_MODULE,
+	.name		= "toyfs",
+	.mount		= toyfs_mount,
+	.kill_sb	= kill_litter_super,
+	.fs_flags	= FS_USERNS_MOUNT,
 };
 
-static struct super_operations toyfs_s_ops = {
+static const struct super_operations toyfs_s_ops = {
 	.statfs		= simple_statfs,
 	.drop_inode	= generic_delete_inode,
 };
 
-static struct file_operations toyfs_file_ops = {
-	.open 		= simple_open,
-	.read 		= toyfs_read_file,
-	.write 		= toyfs_write_file,
+static const struct file_operations toyfs_file_ops = {
+	.open		= simple_open,
+	.read		= toyfs_read_file,
+	.write		= toyfs_write_file,
 };
 
 static struct inode *toyfs_get_inode(struct super_block *sb,
@@ -58,9 +58,9 @@ static struct inode *toyfs_get_inode(struct super_block *sb,
 	return ret;
 }
 
-static int toyfs_fill_super (struct super_block *sb, void *data, int silent)
+static int toyfs_fill_super(struct super_block *sb, void *data, int silent)
 {
-	static struct tree_descr toy_files[] = {{""}};
+	static struct tree_descr toy_files[] = { {""} };
 	int err;
 
 	pr_info("tfs: fill_super");
@@ -77,7 +77,7 @@ static int toyfs_fill_super (struct super_block *sb, void *data, int silent)
 	return 0;
 }
 
-static struct dentry *toyfs_create_file (struct super_block *sb,
+static struct dentry *toyfs_create_file(struct super_block *sb,
 		umode_t mode, const char *name, atomic_t *counter)
 {
 	struct dentry *dentry;
@@ -87,7 +87,7 @@ static struct dentry *toyfs_create_file (struct super_block *sb,
 	pr_info("tfs: create_file");
 
 	qname.name = name;
-	qname.len = strlen (name);
+	qname.len = strlen(name);
 	qname.hash = full_name_hash(name, qname.len);
 	dentry = d_alloc(sb->s_root, &qname);
 	if (!dentry)
