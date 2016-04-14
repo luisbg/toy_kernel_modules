@@ -66,12 +66,12 @@ static struct inode *toyfs_get_inode(struct super_block *sb,
 		ret->i_atime = ret->i_mtime = ret->i_ctime = CURRENT_TIME;
 
 		if (mode & S_IFREG) {
-			pr_info("tfs: create regular file");
+			pr_info("tfs: get_inode: creating a regular file");
 
 			ret->i_fop = &toyfs_file_ops;
 			ret->i_private = &counter;
 		} else {
-			pr_info("tfs: create a directory");
+			pr_info("tfs: get_inode: creating a directory");
 
 			ret->i_op = &toyfs_dir_inode_ops;
 			ret->i_fop = &simple_dir_operations;
