@@ -16,6 +16,8 @@ static struct dentry *toyfs_mount(struct file_system_type *fs_type,
 		int flags, const char *dev_name, void *data);
 static struct dentry *toyfs_create_file(struct super_block *sb,
 		umode_t mode, const char *name);
+static int toyfs_create(struct inode *dir, struct dentry *dentry,
+		umode_t mode, bool excl);
 static ssize_t toyfs_read_file(struct file *filp, char *buf,
 		size_t count, loff_t *offset);
 static ssize_t toyfs_write_file(struct file *filp, const char *buf,
@@ -42,6 +44,15 @@ static const struct file_operations toyfs_file_ops = {
 	.write		= toyfs_write_file,
 };
 
+static const struct inode_operations toyfs_dir_inode_ops = {
+	.create		= toyfs_create,
+	.lookup		= simple_lookup,
+	.link		= simple_link,
+	.unlink		= simple_unlink,
+	.rmdir		= simple_rmdir,
+	.rename		= simple_rename,
+};
+
 static struct inode *toyfs_get_inode(struct super_block *sb,
 		const struct inode *dir, umode_t mode, dev_t dev)
 {
@@ -62,7 +73,7 @@ static struct inode *toyfs_get_inode(struct super_block *sb,
 		} else {
 			pr_info("tfs: create a directory");
 
-			ret->i_op = &simple_dir_inode_operations;
+			ret->i_op = &toyfs_dir_inode_ops;
 			ret->i_fop = &simple_dir_operations;
 		}
 	}
@@ -92,8 +103,6 @@ static int toyfs_fill_super(struct super_block *sb, void *data, int silent)
 		return -ENOMEM;
 
 	toyfs_create_file(sb, S_IFREG, "counter");
-	/* just to show we can have more files */
-	toyfs_create_file(sb, S_IFREG, "counter2");
 
 	return 0;
 }
@@ -124,6 +133,24 @@ static struct dentry *toyfs_create_file(struct super_block *sb,
 out_dput:
 	dput(dentry);
 out:
+	return 0;
+}
+
+static int toyfs_create(struct inode *dir, struct dentry *dentry,
+		umode_t mode, bool excl)
+{
+	struct inode * inode;
+
+	pr_info("tfs: create");
+
+	inode = toyfs_get_inode(dir->i_sb, dir, mode | S_IFREG, 0);
+	if (!inode)
+		return -ENOSPC;
+
+	d_instantiate(dentry, inode);
+	dget(dentry);
+	dir->i_mtime = dir->i_ctime = CURRENT_TIME;
+
 	return 0;
 }
 
