@@ -16,7 +16,7 @@ static struct dentry *toyfs_mount(struct file_system_type *fs_type,
 		int flags, const char *dev_name, void *data);
 static struct dentry *toyfs_create_file(struct super_block *sb,
 		umode_t mode, const char *name);
-static int toyfs_create(struct inode *dir, struct dentry *dentry,
+static int toyfs_user_create_file(struct inode *dir, struct dentry *dentry,
 		umode_t mode, bool excl);
 static ssize_t toyfs_read_file(struct file *filp, char *buf,
 		size_t count, loff_t *offset);
@@ -45,7 +45,7 @@ static const struct file_operations toyfs_file_ops = {
 };
 
 static const struct inode_operations toyfs_dir_inode_ops = {
-	.create		= toyfs_create,
+	.create		= toyfs_user_create_file,
 	.lookup		= simple_lookup,
 	.link		= simple_link,
 	.unlink		= simple_unlink,
@@ -136,10 +136,10 @@ out:
 	return 0;
 }
 
-static int toyfs_create(struct inode *dir, struct dentry *dentry,
+static int toyfs_user_create_file(struct inode *dir, struct dentry *dentry,
 		umode_t mode, bool excl)
 {
-	struct inode * inode;
+	struct inode *inode;
 
 	pr_info("tfs: create");
 
