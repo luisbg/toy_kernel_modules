@@ -5,6 +5,7 @@
 #include <linux/pagemap.h>
 #include <linux/atomic.h>
 #include <linux/uaccess.h>
+#include <linux/slab.h>
 
 #define TOYFS_MAGIC 0x20160408
 #define TMPSIZE 12
@@ -22,8 +23,6 @@ static ssize_t toyfs_read_file(struct file *filp, char *buf,
 		size_t count, loff_t *offset);
 static ssize_t toyfs_write_file(struct file *filp, const char *buf,
 		size_t count, loff_t *offset);
-
-static atomic_t counter;
 
 static struct file_system_type toyfs_type = {
 	.owner		= THIS_MODULE,
@@ -56,6 +55,7 @@ static const struct inode_operations toyfs_dir_inode_ops = {
 static struct inode *toyfs_get_inode(struct super_block *sb,
 		const struct inode *dir, umode_t mode, dev_t dev)
 {
+	atomic_t *counter = NULL;
 	struct inode *ret = new_inode(sb);
 
 	pr_info("tfs: get_inode");
@@ -65,11 +65,14 @@ static struct inode *toyfs_get_inode(struct super_block *sb,
 		ret->i_blocks = 0;
 		ret->i_atime = ret->i_mtime = ret->i_ctime = CURRENT_TIME;
 
+		counter = kmalloc(sizeof(counter), GFP_KERNEL);
+		atomic_set(counter, 0);
+
 		if (mode & S_IFREG) {
 			pr_info("tfs: get_inode: creating a regular file");
 
 			ret->i_fop = &toyfs_file_ops;
-			ret->i_private = &counter;
+			ret->i_private = counter;
 		} else {
 			pr_info("tfs: get_inode: creating a directory");
 
@@ -94,8 +97,6 @@ static int toyfs_fill_super(struct super_block *sb, void *data, int silent)
 		return err;
 
 	sb->s_op = &toyfs_s_ops;
-
-	atomic_set(&counter, 0);
 
 	inode = toyfs_get_inode(sb, NULL, S_IFDIR, 0);
 	sb->s_root = d_make_root(inode);
