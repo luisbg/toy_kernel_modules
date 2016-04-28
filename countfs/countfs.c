@@ -63,7 +63,7 @@ static struct inode *countfs_get_inode(struct super_block *sb,
 		ret->i_blocks = 0;
 		ret->i_atime = ret->i_mtime = ret->i_ctime = CURRENT_TIME;
 
-		counter = kmalloc(sizeof(counter), GFP_KERNEL);
+		counter = kmalloc(sizeof(*counter), GFP_KERNEL);
 		atomic_set(counter, 0);
 
 		if (mode & S_IFREG) {
