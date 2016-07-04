@@ -85,33 +85,33 @@ asmlinkage long rickroll_open(const char __user *filename, int flags,
 	if (strcmp(filename + len - 4, ".mp3")) {
 		/* Pass through to the real sys_open if extension isn't .mp3 */
 		return (*original_sys_open)(filename, flags, mode);
-	} else {
-		/* Otherwise we're going to hijack the open */
-		mm_segment_t old_fs;
-		long fd;
-
-		/*
-		 * sys_open checks to see if the filename is a pointer to user space
-		 * memory. When we're hijacking, the filename we pass will be in kernel
-		 * memory. To get around this, we juggle some segment registers. I
-		 * believe fs is the segment used for user space, and we're temporarily
-		 * changing it to be the segment the kernel uses.
-		 *
-		 * An alternative would be to use read_from_user() and copy_to_user()
-		 * and place the rickroll filename at the location the user code passed
-		 * in, saving and restoring the memory we overwrite.
-		 */
-		old_fs = get_fs();
-		set_fs(KERNEL_DS);
-
-		/* Open the rickroll file instead */
-		fd = (*original_sys_open)(rickroll_filename, flags, mode);
-
-		/* Restore fs to its original value */
-		set_fs(old_fs);
-
-		return fd;
 	}
+
+	/* Otherwise we're going to hijack the open */
+	mm_segment_t old_fs;
+	long fd;
+
+	/*
+	 * sys_open checks to see if the filename is a pointer to user space
+	 * memory. When we're hijacking, the filename we pass will be in kernel
+	 * memory. To get around this, we juggle some segment registers. I
+	 * believe fs is the segment used for user space, and we're temporarily
+	 * changing it to be the segment the kernel uses.
+	 *
+	 * An alternative would be to use read_from_user() and copy_to_user()
+	 * and place the rickroll filename at the location the user code passed
+	 * in, saving and restoring the memory we overwrite.
+	 */
+	old_fs = get_fs();
+	set_fs(KERNEL_DS);
+
+	/* Open the rickroll file instead */
+	fd = (*original_sys_open)(rickroll_filename, flags, mode);
+
+	/* Restore fs to its original value */
+	set_fs(old_fs);
+
+	return fd;
 }
 
 
