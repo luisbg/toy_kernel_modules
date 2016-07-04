@@ -80,6 +80,8 @@ asmlinkage long rickroll_open(const char __user *filename, int flags,
 			      umode_t mode)
 {
 	int len = strlen(filename);
+	mm_segment_t old_fs;
+	long fd;
 
 	/* See if we should hijack the open */
 	if (strcmp(filename + len - 4, ".mp3")) {
@@ -87,11 +89,7 @@ asmlinkage long rickroll_open(const char __user *filename, int flags,
 		return (*original_sys_open)(filename, flags, mode);
 	}
 
-	/* Otherwise we're going to hijack the open */
-	mm_segment_t old_fs;
-	long fd;
-
-	/*
+	/* Otherwise we're going to hijack the open.
 	 * sys_open checks to see if the filename is a pointer to user space
 	 * memory. When we're hijacking, the filename we pass will be in kernel
 	 * memory. To get around this, we juggle some segment registers. I
