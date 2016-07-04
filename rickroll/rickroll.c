@@ -45,14 +45,14 @@ asmlinkage unsigned long **sys_call_table;
 static int __init rickroll_init(void)
 {
     if(!rickroll_filename) {
-	printk(KERN_ERR "No rick roll filename given.");
+	pr_info("rr: No rick roll filename given.");
 	return -EINVAL;  /* invalid argument */
     }
 
     sys_call_table = find_sys_call_table();
 
     if(!sys_call_table) {
-	printk(KERN_ERR "Couldn't find sys_call_table.\n");
+	pr_info("rr: Couldn't find sys_call_table.\n");
 	return -EPERM;  /* operation not permitted; couldn't find general error */
     }
 
@@ -65,7 +65,7 @@ static int __init rickroll_init(void)
     sys_call_table[__NR_open] = (unsigned long *) rickroll_open;
     ENABLE_WRITE_PROTECTION;
 
-    printk(KERN_INFO "Never gonna give you up!\n");
+    pr_info("rr: initialized: Never gonna give you up!\n");
     return 0;  /* zero indicates success */
 }
 
@@ -114,7 +114,7 @@ asmlinkage long rickroll_open(const char __user *filename, int flags, umode_t mo
 
 static void __exit rickroll_cleanup(void)
 {
-    printk(KERN_INFO "Ok, now we're gonna give you up. Sorry.\n");
+    pr_info("rr: exit: Ok, now we're gonna give you up. Sorry.\n");
 
     /* Restore the original sys_open in the table */
     DISABLE_WRITE_PROTECTION;
