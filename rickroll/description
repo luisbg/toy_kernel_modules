@@ -1,0 +1,11 @@
+Rick Rolling Module
+--------------------------------------------------------------------------------
+Never going to give up whatever mp3 file you open.
+
+Based on code by Kamal Marhubi
+(via Julia Evans https://github.com/jvns/kernel-module-fun)
+
+edit rickroll_filename in rickroll.c to point to your copy of Rick Astley song's
+$ make
+# insmod rickroll.ko
+$ gst-play-1.0 ~/path/to/some.mp3
