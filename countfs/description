@@ -1,8 +1,8 @@
-Toy Filesystem Module
+Count Filesystem Module
 ------------------------------------------
 
-# insmod toyfs.ko
-# mount -t toyfs none /mnt
+# insmod countfs.ko
+# mount -t countfs none /mnt
 # cat /mnt/counter
 # cat /mnt/counter
 # cat /mnt/counter
@@ -10,4 +10,4 @@ Toy Filesystem Module
 # cat /mnt/counter
 # cat /mnt/counter
 # umount /mnt
-# rmmod toyfs
+# rmmod countfs
