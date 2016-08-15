@@ -3,6 +3,7 @@ Count Filesystem Module
 
 # insmod countfs.ko
 # mount -t countfs none /mnt
+# touch /mnt/counter
 # cat /mnt/counter
 # cat /mnt/counter
 # cat /mnt/counter

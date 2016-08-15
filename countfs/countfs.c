@@ -15,9 +15,7 @@ MODULE_AUTHOR("Luis de Bethencourt");
 
 static struct dentry *countfs_mount(struct file_system_type *fs_type,
 		int flags, const char *dev_name, void *data);
-static struct dentry *countfs_create_file(struct super_block *sb,
-		umode_t mode, const char *name);
-static int countfs_user_create_file(struct inode *dir, struct dentry *dentry,
+static int countfs_create_file(struct inode *dir, struct dentry *dentry,
 		umode_t mode, bool excl);
 static ssize_t countfs_read_file(struct file *filp, char *buf,
 		size_t count, loff_t *offset);
@@ -44,7 +42,7 @@ static const struct file_operations countfs_file_ops = {
 };
 
 static const struct inode_operations countfs_dir_inode_ops = {
-	.create		= countfs_user_create_file,
+	.create		= countfs_create_file,
 	.lookup		= simple_lookup,
 	.link		= simple_link,
 	.unlink		= simple_unlink,
@@ -103,46 +101,15 @@ static int countfs_fill_super(struct super_block *sb, void *data, int silent)
 	if (!sb->s_root)
 		return -ENOMEM;
 
-	countfs_create_file(sb, S_IFREG, "counter");
-
 	return 0;
 }
 
-static struct dentry *countfs_create_file(struct super_block *sb,
-		umode_t mode, const char *name)
-{
-	struct dentry *dentry;
-	struct inode *inode;
-	struct qstr qname;
-
-	pr_info("cfs: create_file\n");
-
-	qname.name = name;
-	qname.len = strlen(name);
-	qname.hash = full_name_hash(NULL, name, qname.len);
-	dentry = d_alloc(sb->s_root, &qname);
-	if (!dentry)
-		goto out;
-
-	inode = countfs_get_inode(sb, NULL, mode | 0644, 0);
-	if (!inode)
-		goto out_dput;
-
-	d_add(dentry, inode);
-	return dentry;
-
-out_dput:
-	dput(dentry);
-out:
-	return 0;
-}
-
-static int countfs_user_create_file(struct inode *dir, struct dentry *dentry,
+static int countfs_create_file(struct inode *dir, struct dentry *dentry,
 		umode_t mode, bool excl)
 {
 	struct inode *inode;
 
-	pr_info("cfs: create\n");
+	pr_info("cfs: create_file: %s\n", dentry->d_name.name);
 
 	inode = countfs_get_inode(dir->i_sb, dir, mode | S_IFREG, 0);
 	if (!inode)
