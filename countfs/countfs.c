@@ -58,7 +58,7 @@ static struct inode *countfs_get_inode(struct super_block *sb,
 	atomic_t *counter = NULL;
 	struct inode *ret = new_inode(sb);
 
-	pr_info("cfs: get_inode");
+	pr_info("cfs: get_inode\n");
 
 	if (ret) {
 		ret->i_mode = mode;
@@ -69,12 +69,12 @@ static struct inode *countfs_get_inode(struct super_block *sb,
 		atomic_set(counter, 0);
 
 		if (mode & S_IFREG) {
-			pr_info("cfs: get_inode: creating a regular file");
+			pr_info("cfs: get_inode: creating a regular file\n");
 
 			ret->i_fop = &countfs_file_ops;
 			ret->i_private = counter;
 		} else {
-			pr_info("cfs: get_inode: creating a directory");
+			pr_info("cfs: get_inode: creating a directory\n");
 
 			ret->i_op = &countfs_dir_inode_ops;
 			ret->i_fop = &simple_dir_operations;
@@ -90,7 +90,7 @@ static int countfs_fill_super(struct super_block *sb, void *data, int silent)
 	struct inode *inode;
 	int err;
 
-	pr_info("cfs: fill_super");
+	pr_info("cfs: fill_super\n");
 
 	err = simple_fill_super(sb, COUNTFS_MAGIC, toy_files);
 	if (err)
@@ -115,7 +115,7 @@ static struct dentry *countfs_create_file(struct super_block *sb,
 	struct inode *inode;
 	struct qstr qname;
 
-	pr_info("cfs: create_file");
+	pr_info("cfs: create_file\n");
 
 	qname.name = name;
 	qname.len = strlen(name);
@@ -142,7 +142,7 @@ static int countfs_user_create_file(struct inode *dir, struct dentry *dentry,
 {
 	struct inode *inode;
 
-	pr_info("cfs: create");
+	pr_info("cfs: create\n");
 
 	inode = countfs_get_inode(dir->i_sb, dir, mode | S_IFREG, 0);
 	if (!inode)
@@ -158,7 +158,7 @@ static int countfs_user_create_file(struct inode *dir, struct dentry *dentry,
 static struct dentry *countfs_mount(struct file_system_type *fs_type,
 		int flags, const char *dev_name, void *data)
 {
-	pr_info("cfs: mount");
+	pr_info("cfs: mount\n");
 
 	return mount_nodev(fs_type, flags, data, countfs_fill_super);
 }
@@ -170,7 +170,7 @@ static ssize_t countfs_read_file(struct file *filp, char *buf,
 	char tmp[TMPSIZE];
 	atomic_t *counter = (atomic_t *) filp->private_data;
 
-	pr_info("cfs: read");
+	pr_info("cfs: read\n");
 
 	c = atomic_read(counter);
 	atomic_inc(counter);
@@ -187,14 +187,14 @@ static ssize_t countfs_write_file(struct file *filp, const char *buf,
 	long val;
 	int err;
 
-	pr_info("cfs: write");
+	pr_info("cfs: write\n");
 
 	simple_write_to_buffer(tmp, TMPSIZE, offset, buf, count);
 	tmp[count] = '\0';    /* ktrstrol needs a null terminated string */
 	err = kstrtol(tmp, 10, &val);
 	if (!err) {
 		atomic_set(counter, val);
-		pr_info("cfs: count is now %ld", val);
+		pr_info("cfs: count is now %ld\n", val);
 	}
 
 	return count;

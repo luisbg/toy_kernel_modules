@@ -46,7 +46,7 @@ asmlinkage unsigned long **sys_call_table;
 static int __init rickroll_init(void)
 {
 	if (!rickroll_filename) {
-		pr_info("rr: No rick roll filename given.");
+		pr_info("rr: No rick roll filename given.\n");
 		return -EINVAL;  /* invalid argument */
 	}
 
