@@ -119,7 +119,7 @@ static struct dentry *toyfs_create_file(struct super_block *sb,
 
 	qname.name = name;
 	qname.len = strlen(name);
-	qname.hash = full_name_hash(name, qname.len);
+	qname.hash = full_name_hash(NULL, name, qname.len);
 	dentry = d_alloc(sb->s_root, &qname);
 	if (!dentry)
 		goto out;
